@@ -143,20 +143,21 @@ module.exports = function(file, opt) {
  
     };
 
-    self.terminate = function() {
+    self.terminate = function(signal) {
         if (!cluster.isMaster) return;
+        var signal = signal || 'SIGKILL';
         try {
         cluster.removeListener('exit', workerExit);
         cluster.removeListener('listening', workerListening);
         respawners.cancel();
         each(cluster.workers, function(id, worker) {
             if (worker.kill)
-                worker.kill('SIGKILL');
+                worker.kill(signal);
             else
                 worker.destroy();
         });
         } catch (e) {
-            console.log("terminate error", e);
+            console.log('terminate error', e);
         }
     }
 
